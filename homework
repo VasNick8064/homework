@@ -1,0 +1,110 @@
+class Web_App:
+    """
+    Класс веб-приложения с атрибутами: имя приложения, статус приложения
+    """
+
+    def __init__(self, name_app, status_webapp):
+        self.__name_app = name_app
+        self.status_webapp = status_webapp
+
+    def get_web_app(self, ):  # Метод получения имени приложения и статуса, в задании не указано, но я сделал
+        print(f"Имя приложения: {self.__name_app} \nСтатус приложения: {self.status_webapp}")
+
+    def deploy(self, x, key="Installed"):  # Метод установки приложения.
+        self.status_webapp = key
+        return self.status_webapp
+
+    def remove(self, key="Deleted"):  # Метод удаления приложения
+        self.status_webapp = key
+        return self.status_webapp
+
+    @property # Получение имени приложения
+    def ch_name(self):
+        return self.__name_app
+
+    @ch_name.setter # Изменение имени приложения
+    def ch_name(self, x: str):
+        if len(x) < 4 or not x.isalnum():
+            raise NameError(f"{x} - неверное имя приложения. Имя приложения должно быть не меньше 4 символов, может "
+                            f"содержать  только буквы и цифры")
+        self.__name_app = x
+
+
+test = Web_App("Test_App", "Installed")
+test.get_web_app()
+print(test.ch_name) # Получаем имя сервера
+test.ch_name = "Myapp1" # Изменяем имя приложения
+test.get_web_app()
+
+
+class Server:
+    """
+      Класс сервер с атрибутами: имя сервера, список приложений, статус работы.
+    """
+
+    def __init__(self, server_name):
+        self.__server_name = server_name
+        self.app_list = {}
+        self.server_status = "Inactive"
+
+    @property
+    def serv_name(self):
+        return self.__server_name
+
+    @serv_name.setter
+    def serv_name(self, x: str):  # Функция смены имени сервера
+        if len(x) < 4 or not x.isalnum(): # Проверка корректности нового имени сервера
+            raise NameError(
+                f"{x} - неверное имя сервера. Имя сервера должно быть не меньше 4 символов, может содержать  "
+                f"только буквы и цифры")
+        self.__server_name = x
+
+    def get_server_status(self):  # Функция получения информации о сервере
+        """Метод получения статуса сервера и списка приложений"""
+        print(f"Server: {self.__server_name}")
+        print(f"Applications on server: {self.app_list}")
+        print(f"Server status: {self.server_status}")
+
+    def add_app(self, x, v="Stopped"):  # Без isinstance, если приложение существует на сервере, то выдаст ошибку
+        if x in self.app_list:
+            raise NameError(f"Приложение {x} уже существует на сервере")
+        self.app_list[x] = v
+
+    def del_app(self, x: str):  # Без isinstance, если приложение отсутствует на сервере, то выдаст ошибку
+        if x not in self.app_list:
+            raise ValueError(f"Приложение {x} отсутствует на сервере {self.__server_name}")
+        del self.app_list[x]
+
+    def start_app(self, x: str):  # Функция запуска приложения
+        if x not in self.app_list:
+            raise NameError(f"Приложения {x} отсутствует на сервере {self.server_name}")
+        self.app_list[x] = "Started"
+
+    def stop_app(self, x: str):  # Функция останова приложения
+        if x not in self.app_list:
+            raise NameError(f"Приложения {x} отсутствует на сервере {self.server_name}")
+        self.app_list[x] = "Stopped"
+
+    def change_server_status(self, x: str):
+        match x:  # Реализация match/case
+            case "Active":
+                pass
+            case "Inactive":
+                pass
+            case _:
+                raise ValueError("Введена неверная команда, попробуйте Active - для включения сервера / Inactive - для "
+                                 "выключения сервера")
+        self.server_status = x
+
+        # if x != "Active" and x != "Inactive":
+        #     raise ValueError("Введена неверная команда, попробуйте Active - для включения сервера / Inactive - для "
+        #                      "выключения сервера")
+        # self.server_status = x
+
+
+b = Server("My_server")
+b.add_app("app")
+b.get_server_status()
+b.serv_name = "Server1"  # Меняем имя сервера
+print(b.serv_name)  # Получаем имя сервера
+b.get_server_status()
