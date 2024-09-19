@@ -4,7 +4,7 @@ from functools import wraps
 
 
 logging.basicConfig(filename="app_logs.txt", level=logging.INFO,filemode="w",
-                    format="%(module)s:%(funcName)s:%(message)s:%(filename)s")
+                    format="%(asctime)s     %(module)s:%(funcName)s:%(message)s)")
 
 
 class Application:
