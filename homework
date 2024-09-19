@@ -1,28 +1,49 @@
-class Web_App:
+from datetime import datetime,date
+import logging
+from functools import wraps
+
+
+logging.basicConfig(filename="app_logs.txt", level=logging.INFO,filemode="w",
+                    format="%(module)s:%(funcName)s:%(message)s:%(filename)s")
+
+
+class Application:
     """
     Класс веб-приложения с атрибутами: имя приложения, статус приложения
     """
 
-    def __init__(self, name_app, status_webapp):
+    def __init__(self, name_app):
         self.__name_app = name_app
-        self.status_webapp = status_webapp
+        self.status_app = "Uninstalled"
 
-    def get_web_app(self, ):  # Метод получения имени приложения и статуса, в задании не указано, но я сделал
-        print(f"Имя приложения: {self.__name_app} \nСтатус приложения: {self.status_webapp}")
+    def get_info_application(self, ):  # Метод получения имени приложения и статуса, в задании не указано, но я сделал
+        print(f"Имя приложения: {self.__name_app} \nСтатус приложения: {self.status_app}")
 
-    def deploy(self, x, key="Installed"):  # Метод установки приложения.
-        self.status_webapp = key
-        return self.status_webapp
+    def deploy(self, key):  # Метод установки приложения.
+        if key not in "Install":
+            raise NameError("Неверная команда установки, попробуйте 'Install'")
+        self.status_app = "Installed"
+        return self.status_app
 
-    def remove(self, key="Deleted"):  # Метод удаления приложения
-        self.status_webapp = key
-        return self.status_webapp
+    def log_method_call(func): # Декоратор для записи в лог вызова метода remove
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            logging.info(f"Вызов функции: {func.__name__}")
+            result = func(*args, **kwargs)
+            logging.info(f"Результат функции {func.__name__} - {result}")
+        return wrapper
+    @log_method_call
+    def remove(self, key):  # Метод удаления приложения
+        if key not in "Delete":
+            raise NameError("Неверная команда удаления, попробуйте 'Delete'")
+        self.status_app = key
+        return self.status_app
 
-    @property # Получение имени приложения
+    @property  # Получение имени приложения
     def ch_name(self):
         return self.__name_app
 
-    @ch_name.setter # Изменение имени приложения
+    @ch_name.setter  # Изменение имени приложения
     def ch_name(self, x: str):
         if len(x) < 4 or not x.isalnum():
             raise NameError(f"{x} - неверное имя приложения. Имя приложения должно быть не меньше 4 символов, может "
@@ -30,11 +51,82 @@ class Web_App:
         self.__name_app = x
 
 
-test = Web_App("Test_App", "Installed")
-test.get_web_app()
-print(test.ch_name) # Получаем имя сервера
-test.ch_name = "Myapp1" # Изменяем имя приложения
-test.get_web_app()
+test = Application("Test_App")
+print(test.ch_name)  # Получаем имя сервера
+test.ch_name = "Myapp1"  # Изменяем имя приложения
+test.deploy("Install")
+test.get_info_application()
+
+
+class Web_App(Application):
+    """
+    Класс WEB App, наследуются все методы из родительского класса, добавлен локальный метод получения,
+    изменения служебной или какой другой либо информации о приложении.
+    """
+
+    def __init__(self, name_app, app_info):
+        super().__init__(name_app)
+        self.__app_info = app_info
+
+    @property  # Метод получения како-либо информаии о веб приложении
+    def info(self):
+        return f"Информация о WEB приложении: {self.__app_info}"
+
+    @info.setter  #Метод записи какой либо информации о веб приложении
+    def info(self, x: str):
+        self.__app_info = x
+
+    def log_method_call(func): # Декоратор для записи в лог вызова метода deploy
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            logging.info(f"Вызов функции: {func.__name__}")
+            result = func(*args, **kwargs)
+            logging.info(f"Результат функции {func.__name__} - {result}")
+        return wrapper
+    @log_method_call
+    def deploy(self, key):  # Метод установки приложения, метод переопределен, добавлен тег [WEB App]
+        if key not in "Install":
+            raise NameError("Неверная команда установки, попробуйте 'Install'")
+        self.status_app = "[WEB App]_Installed"
+        return self.status_app
+
+
+
+wa = Web_App("WEB_app", "info about WEB App")
+print(wa.info)
+wa.info = "New info"
+print(wa.info)
+wa.get_info_application()  # Наследуем все методы из родительского класса
+wa.deploy("Install")
+wa.get_info_application()
+
+
+class DataBase_App(Application):
+    """
+    Класс ДБ, наследуются все методы из родительского класса, добавлен локальный метод получения времени
+    """
+
+    def __init__(self, name_app):
+        super().__init__(name_app)
+        self.DB_time = datetime.now().time()
+
+    def get_db_time(self):  # Метож получения сведений о времени в БД
+        return f"Время на сервере баз данных: {datetime.now().time()}"
+
+    def deploy(self, key):  # Метод установки приложения, метод переопределен, добавлен тег [DB App]
+        if key not in "Install":
+            raise NameError("Неверная команда установки, попробуйте 'Install'")
+        self.status_app = "[DB App]_Installed"
+        return self.status_app
+
+
+db = DataBase_App("DB app")
+db.get_info_application()
+print(db.get_db_time())
+db.deploy("Install")
+db.get_info_application()
+db.remove("Delete")
+db.get_info_application()
 
 
 class Server:
@@ -53,7 +145,7 @@ class Server:
 
     @serv_name.setter
     def serv_name(self, x: str):  # Функция смены имени сервера
-        if len(x) < 4 or not x.isalnum(): # Проверка корректности нового имени сервера
+        if len(x) < 4 or not x.isalnum():  # Проверка корректности нового имени сервера
             raise NameError(
                 f"{x} - неверное имя сервера. Имя сервера должно быть не меньше 4 символов, может содержать  "
                 f"только буквы и цифры")
@@ -96,15 +188,20 @@ class Server:
                                  "выключения сервера")
         self.server_status = x
 
-        # if x != "Active" and x != "Inactive":
-        #     raise ValueError("Введена неверная команда, попробуйте Active - для включения сервера / Inactive - для "
-        #                      "выключения сервера")
-        # self.server_status = x
+    def start_all_app(self):  # Вместо deploy_all_apps, я назвал start_all_apps. Решение придумал за пару минут,
+        # очень этому рад. Мы пробегаемся по списку установленых приложений на сервере, в переменной i у нас при
+        # каждой итерации новое имя приложения, которое мы передаем в функция start_app в качестве аргумента.
+        for i in self.app_list:
+            self.start_app(i)
 
 
-b = Server("My_server")
-b.add_app("app")
-b.get_server_status()
-b.serv_name = "Server1"  # Меняем имя сервера
-print(b.serv_name)  # Получаем имя сервера
-b.get_server_status()
+srv = Server("My_server")
+srv.add_app("app")
+srv.add_app("app2")
+srv.add_app("app3")
+srv.get_server_status()
+srv.start_all_app()
+srv.get_server_status()
+
+
+
